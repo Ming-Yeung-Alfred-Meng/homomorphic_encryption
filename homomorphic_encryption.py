@@ -21,7 +21,7 @@ def public_key_candidate(size: int,
                          private_key: int) -> tuple[np.ndarray, signedinteger[Any] | long]:
     key = (private_key *
            np.random.randint(0, (2 ** int_size) / private_key, size=(size + 1,))
-           + np.random.randint(1 - (2 ** noise_size), 2 ** noise_size, size=(size + 1,)))
+           + noise(noise_size, (size + 1,)))
 
     max_index = np.argmax(key)
 
@@ -52,6 +52,7 @@ def noise(noise_size: int,
           shape: Tuple[int, ...]) -> np.ndarray:
     return np.random.randint(1 - (2 ** noise_size), 2 ** noise_size, size=shape)
 
+
 def selected_sum(numbers: np.ndarray,
                  num: int) -> np.ndarray:
     return np.random.choice([0, 1], size=(num, len(numbers))) @ numbers
@@ -64,15 +65,19 @@ def int2binary_array(plaintext: int) -> np.ndarray:
 def encrypt(plaintext: int,
             public_key: np.ndarray,
             secondary_noise_size: int) -> np.ndarray:
-
     bits = int2binary_array(plaintext)
 
     return ((bits
-            + 2 * noise(secondary_noise_size, bits.shape)
-            + 2 * selected_sum(public_key[1:], len(bits)))
+             + 2 * noise(secondary_noise_size, bits.shape)
+             + 2 * selected_sum(public_key[1:], len(bits)))
             % public_key[0])
+
+
+def binary_array2int(bits) -> int:
+    return int(''.join(map(str, bits)), 2)
 
 
 def decrypt(private_key: int,
             ciphertext: np.ndarray) -> int:
-    pass
+    bits = ciphertext % private_key % 2
+    return binary_array2int(bits)
