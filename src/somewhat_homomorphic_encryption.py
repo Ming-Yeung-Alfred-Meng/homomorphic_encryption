@@ -1,5 +1,6 @@
 import numpy as np
 from typing import Union, Tuple, Any
+import random
 
 
 def private_key(num_bits: int) -> int:
@@ -8,7 +9,7 @@ def private_key(num_bits: int) -> int:
     :param num_bits:
     :return:
     """
-    return np.random.randint(2 ** (num_bits - 1), 2 ** num_bits) | 1
+    return random.randrange(2 ** (num_bits - 1), 2 ** num_bits) | 1
 
 
 def public_key_candidate(size: int,
