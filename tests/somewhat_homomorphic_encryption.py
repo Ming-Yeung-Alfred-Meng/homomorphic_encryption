@@ -2,26 +2,112 @@ import unittest
 from src.somewhat_homomorphic_encryption import *
 
 
-class Noise(unittest.TestCase):
-    def test_simple(self):
-        noise_size = 28
-        shape = (36,)
+class RandInt(unittest.TestCase):
+
+    def test_single_int_type(self):
+        start = 7
+        stop = 18
+        integer = randint(start, stop)
+        self.assertTrue(type(integer) is int)
+    def test_single_int_step1(self):
+        start = 2
+        stop = 6
         trials = 1000
 
         for i in range(trials):
-            noises = noise(noise_size, shape)
-            self.assertTrue(noises.shape == shape)
+            integer = randint(start, stop)
+            self.assertTrue(2 <= integer <= 5)
+
+    def test_single_even_int(self):
+        start = 0
+        stop = 7
+        trials = 1000
+
+        for i in range(trials):
+            integer = randint(start, stop, step=2)
+            self.assertTrue(integer % 2 == 0)
+            self.assertTrue(0 <= integer <= 6)
+
+    def test_single_odd_int(self):
+        start = 1
+        stop = 7
+        trials = 1000
+
+        for i in range(trials):
+            integer = randint(start, stop, step=2)
+            self.assertTrue(integer % 2 == 1)
+            self.assertTrue(1 <= integer <= 5)
+
+    def test_multiple_int_length(self):
+        start = 12
+        stop = 16
+        length = 4
+        array = randint(start, stop, length=length)
+        self.assertTrue(array.shape == (length,))
+
+    def test_multiple_int_type(self):
+        start = 13
+        stop = 19
+        length = 4
+        index = 2
+        array = randint(start, stop, length=length)
+        self.assertTrue(type(array[index]) is int)
+
+    def test_multiple_step1(self):
+            start = 2
+            stop = 6
+            length = 11
+            trials = 1000
+
+            for i in range(trials):
+                array = randint(start, stop, length=length)
+                self.assertTrue(np.all(2 <= array))
+                self.assertTrue(np.all(array <= 5))
+
+    def test_multiple_even_int(self):
+        start = 0
+        stop = 7
+        length = 6
+        trials = 1000
+
+        for i in range(trials):
+            integer = randint(start, stop, step=2, length=length)
+            self.assertTrue(np.all((integer % 2) == 0))
+            self.assertTrue(np.all(0 <= integer))
+            self.assertTrue(np.all(integer <= 6))
+
+    def test_multiple_odd_int(self):
+        start = 1
+        stop = 7
+        trials = 1000
+
+        for i in range(trials):
+            integer = randint(start, stop, step=2)
+            self.assertTrue((integer % 2) == 1)
+            self.assertTrue(np.all(1 <= integer))
+            self.assertTrue(np.all(integer <= 5))
+
+
+class Noise(unittest.TestCase):
+    def test_simple(self):
+        noise_size = 28
+        length = 36
+        trials = 1000
+
+        for i in range(trials):
+            noises = noise(noise_size, length)
+            self.assertTrue(noises.shape == (length,))
             self.assertTrue(np.all(- 268435456 < noises))
             self.assertTrue(np.all(noises < 268435456))
 
     def test_small_noise_size(self):
         noise_size = 2
-        shape = (36,)
+        length = 36
         trials = 1000
 
         for i in range(trials):
-            noises = noise(noise_size, shape)
-            self.assertTrue(noises.shape == shape)
+            noises = noise(noise_size, length)
+            self.assertTrue(noises.shape == (length,))
             self.assertTrue(np.all(- 4 < noises))
             self.assertTrue(np.all(noises < 4))
 
@@ -118,12 +204,20 @@ class PublicKey(unittest.TestCase):
 class EncryptDecrypt(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.security = 3
-        self.private_key_length = self.security ** 2
-        self.public_key_bits = self.security ** 5
-        self.public_key_length = self.public_key_bits + self.security + 1
-        self.primary_noise_size = self.security
-        self.secondary_noise_size = 2 * self.security
+        # self.security = 5
+        # self.private_key_length = self.security ** 2
+        # self.public_key_bits = self.security ** 5
+        # self.public_key_length = self.public_key_bits + self.security + 1
+        # self.primary_noise_size = self.security
+        # self.secondary_noise_size = 2 * self.security
+
+        self.trials = 3
+
+        self.private_key_length = 20
+        self.public_key_bits = 20
+        self.public_key_length = 4
+        self.primary_noise_size = 2
+        self.secondary_noise_size = 2
 
         self.private_key, self.public_key = key(self.private_key_length,
                                                 self.public_key_length,
@@ -132,8 +226,7 @@ class EncryptDecrypt(unittest.TestCase):
     def test_plaintext0(self):
         plaintext = 0
 
-        trials = 10
-        for i in range(trials):
+        for i in range(self.trials):
             ciphertext = encrypt(plaintext, self.public_key, self.secondary_noise_size)
             decrypted = decrypt(ciphertext, self.private_key)
             self.assertTrue(plaintext == decrypted)
@@ -141,8 +234,7 @@ class EncryptDecrypt(unittest.TestCase):
     def test_plaintext1(self):
         plaintext = 1
 
-        trials = 1000
-        for i in range(trials):
+        for i in range(self.trials):
             ciphertext = encrypt(plaintext, self.public_key, self.secondary_noise_size)
             decrypted = decrypt(ciphertext, self.private_key)
             self.assertTrue(plaintext == decrypted)
@@ -159,7 +251,7 @@ class EncryptDecrypt(unittest.TestCase):
             decrypted = decrypt(ciphertext0 + ciphertext1, self.private_key)
             self.assertTrue(decrypted == 1)
 
-    def test_addition(self):
+    def test_multiplication(self):
         plaintext0 = 0
         plaintext1 = 1
 

@@ -1,15 +1,27 @@
 import numpy as np
 from typing import Union, Tuple, Any
 import random
+import math
+
+
+def randint(start: int,
+            stop: int,
+            step: int = 1,
+            length: int = 0,
+            dtype=object) -> Union[int, np.ndarray]:
+    if length == 0:
+        return random.randrange(start, stop, step)
+    else:
+        return np.array([random.randrange(start, stop, step) for _ in range(length)], dtype=dtype)
 
 
 def private_key(num_bits: int) -> int:
     """
     Generate an odd num_bits-bit integer from the range [2^{num_bits - 1}, 2^{num_bits}) as private key.
-    :param num_bits:
-    :return:
+    :param num_bits: number of bits of the private key.
+    :return: a private key
     """
-    return random.randrange(2 ** (num_bits - 1), 2 ** num_bits) | 1
+    return randint(2 ** (num_bits - 1) + 1, 2 ** num_bits, 2)
 
 
 def public_key_candidate(size: int,
@@ -27,8 +39,8 @@ def public_key_candidate(size: int,
     :return: 1D array of a public key
     """
     key = (private_key *
-           np.random.randint(0, (2 ** int_size) / private_key, size=(size,))
-           + noise(noise_size, (size,)))
+           randint(0, math.floor((2 ** int_size) / private_key), length=size)
+           + noise(noise_size, size))
 
     max_index = np.argmax(key)
 
@@ -69,14 +81,15 @@ def public_key(size: int,
 
 
 def noise(noise_size: int,
-          shape: Tuple[int, ...]) -> np.ndarray:
+          length: int) -> np.ndarray:
     """
     Generate random noises from integers in (-2^noise_size, 2^noise_size).
     :param noise_size: bit length of each noise.
-    :param shape: shape of the output numpy array
+    :param shape: length of the 1D output numpy array
     :return: ndarray of noises.
     """
-    return np.random.randint(1 - (2 ** noise_size), 2 ** noise_size, size=shape)
+    # return randint(1 - (2 ** noise_size), 2 ** noise_size, length=length)
+    return randint(0, 2 ** noise_size, length=length)
 
 
 def selected_sum(numbers: np.ndarray,
@@ -123,7 +136,7 @@ def encrypt(plaintext: int,
     bits = int2binary_array(plaintext)
 
     return ((bits
-             + 2 * noise(secondary_noise_size, bits.shape)
+             + 2 * noise(secondary_noise_size, len(bits))
              + 2 * selected_sum(public_key[1:], len(bits)))
             % public_key[0])
 
