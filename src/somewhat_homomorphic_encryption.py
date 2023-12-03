@@ -15,9 +15,19 @@ def public_key_candidate(size: int,
                          int_size: int,
                          noise_size: int,
                          private_key: int) -> tuple[np.ndarray, int]:
+    """
+    Generate a public key in which each integer x = p * q + r,
+    where p is the private key, q is a random integer from [0, 2^{int_size} / p)
+    and r is from (-2^{noise_size}, 2^{noise_size}).
+    :param size: number of integers in the public key
+    :param int_size: bit size of the integers in the public key
+    :param noise_size: bit size of noise
+    :param private_key: private key
+    :return: 1D array of a public key
+    """
     key = (private_key *
-           np.random.randint(0, (2 ** int_size) / private_key, size=(size + 1,))
-           + noise(noise_size, (size + 1,)))
+           np.random.randint(0, (2 ** int_size) / private_key, size=(size,))
+           + noise(noise_size, (size,)))
 
     max_index = np.argmax(key)
 
@@ -40,8 +50,16 @@ def public_key(size: int,
                int_size: int,
                noise_size: int,
                private_key: int) -> np.ndarray:
+    """
+    Generate a public key. The first integer k0 in the key is the largest and is odd, and k0 % private_key is even.
+    :param size: number of integers in the public key
+    :param int_size: bit size of the integers in the public key
+    :param noise_size: bit size of noise
+    :param private_key: private key
+    :return: 1D array public key
+    """
     key, max_index = public_key_candidate(size, int_size, noise_size, private_key)
-    while key[max_index] % 2 == 0 or key[max_index] % private_key == 1:
+    while key[max_index] % 2 == 0 or (key[max_index] % private_key) % 2 == 1:
         key, max_index = public_key_candidate(size, int_size, noise_size, private_key)
 
     move_max(key, max_index)
@@ -81,6 +99,23 @@ def int2binary_array(integer: int) -> np.ndarray:
     return np.array(list(map(int, bin(integer)[2:])))
 
 
+def binary_array2int(bits) -> int:
+    """
+    Create an integer from an array containing its binary digits.
+    :param bits: 1D array of binary digits.
+    :return: integer bits represents.
+    """
+    return int(''.join(map(str, bits)), 2)
+
+
+def key(private_key_length: int,
+        public_key_length: int,
+        public_key_bits: int,
+        primary_noise_size: int) -> Tuple:
+    k = private_key(private_key_length)
+    return k, public_key(public_key_length, public_key_bits, primary_noise_size, k)
+
+
 def encrypt(plaintext: int,
             public_key: np.ndarray,
             secondary_noise_size: int) -> np.ndarray:
@@ -92,16 +127,7 @@ def encrypt(plaintext: int,
             % public_key[0])
 
 
-def binary_array2int(bits) -> int:
-    """
-    Create an integer from an array containing its binary digits.
-    :param bits: 1D array of binary digits.
-    :return: integer bits represents.
-    """
-    return int(''.join(map(str, bits)), 2)
-
-
-def decrypt(private_key: int,
-            ciphertext: np.ndarray) -> int:
-    bits = ciphertext % private_key % 2
+def decrypt(ciphertext: np.ndarray,
+            private_key: int) -> int:
+    bits = (ciphertext % private_key) % 2
     return binary_array2int(bits)
