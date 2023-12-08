@@ -44,26 +44,26 @@ def binary_array2int(bits) -> int:
 
 
 def key_multiple(num_bits: int,
-                 num: int) -> Union[int, np.ndarray]:
+                 length: int) -> Union[int, np.ndarray]:
     """
     Sample q from [0, 2 ** num_bits), where q is intended for the encryption c = qp + 2r + m.
     :param num_bits: number of bits of q.
-    :param num: number of q to generate
-    :return: an integer if num = 0, a 1D numpy array of shape (num,) if num > 0.
+    :param length: length of output
+    :return: an integer if length = 0, a 1D numpy array of shape (length,) if length > 0.
     """
-    return randint(0, 2 ** num_bits, length=num)
+    return randint(0, 2 ** num_bits, length=length)
 
 
 def noise(key: int,
-          num: int) -> Union[int, np.ndarray]:
+          length: int) -> Union[int, np.ndarray]:
     """
     Sample positive noise r, where r is intended for the encryption c = qp + 2r + m. The magnitude of r ensures
     homomorphism of addition or multiplication of ciphertexts for at least once.
     :param key: encryption key, i.e. p in c = qp + 2r + m
-    :param num: number of r to generate
-    :return: an integer if num = 0, a 1D numpy array of shape (num,) if num > 0.
+    :param length: length of output
+    :return: an integer if length = 0, a 1D numpy array of shape (length,) if length > 0.
     """
-    return randint(0, math.floor((-1 + math.sqrt(key - 1)) / 2), length=num)
+    return randint(0, math.floor((-1 + math.sqrt(key - 1)) / 2), length=length)
 
 
 def key(num_bits: int) -> int:
