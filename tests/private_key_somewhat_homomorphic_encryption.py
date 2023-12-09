@@ -222,23 +222,127 @@ class EncryptDecryptCorrectness(unittest.TestCase):
 
 class HomomorphicDecryptionCorrectness(unittest.TestCase):
 
-    def addition_single_00(self):
-        pass
+    def test_addition_single_00(self):
+        m0 = 0
+        m1 = 0
+        trials = 1000
 
-    def addition_single_10(self):
-        pass
+        for _ in range(trials):
+            key_num_bits = np.random.randint(64, 128)
+            q_num_bits = np.random.randint(64, 128)
+            k = key(key_num_bits)
+            c0 = encrypt(m0, k, q_num_bits)
+            c1 = encrypt(m1, k, q_num_bits)
+            c_sum = c0 + c1
+            xor = decrypt(c_sum, k)
+            self.assertTrue(xor == 0)
 
-    def addition_single_11(self):
-        pass
+    def test_addition_single_10(self):
+        m0 = 0
+        m1 = 1
+        trials = 1000
 
-    def multiplication_single_00(self):
-        pass
+        for _ in range(trials):
+            key_num_bits = np.random.randint(64, 128)
+            q_num_bits = np.random.randint(64, 128)
+            k = key(key_num_bits)
+            c0 = encrypt(m0, k, q_num_bits)
+            c1 = encrypt(m1, k, q_num_bits)
+            c_sum = c0 + c1
+            xor = decrypt(c_sum, k)
+            self.assertTrue(xor == 1)
 
-    def multiplication_single_10(self):
-        pass
+    def test_addition_single_11(self):
+        m0 = 1
+        m1 = 1
+        trials = 1000
 
-    def multiplication_single_11(self):
-        pass
+        for _ in range(trials):
+            key_num_bits = np.random.randint(64, 128)
+            q_num_bits = np.random.randint(64, 128)
+            k = key(key_num_bits)
+            c0 = encrypt(m0, k, q_num_bits)
+            c1 = encrypt(m1, k, q_num_bits)
+            c_sum = c0 + c1
+            xor = decrypt(c_sum, k)
+            self.assertTrue(xor == 0)
+
+    def test_multiplication_single_00(self):
+        m0 = 0
+        m1 = 0
+        trials = 1000
+
+        for _ in range(trials):
+            key_num_bits = np.random.randint(64, 128)
+            q_num_bits = np.random.randint(64, 128)
+            k = key(key_num_bits)
+            c0 = encrypt(m0, k, q_num_bits)
+            c1 = encrypt(m1, k, q_num_bits)
+            c_product = c0 * c1
+            product = decrypt(c_product, k)
+            self.assertTrue(product == 0)
+
+    def test_multiplication_single_10(self):
+        m0 = 0
+        m1 = 1
+        trials = 1000
+
+        for _ in range(trials):
+            key_num_bits = np.random.randint(64, 128)
+            q_num_bits = np.random.randint(64, 128)
+            k = key(key_num_bits)
+            c0 = encrypt(m0, k, q_num_bits)
+            c1 = encrypt(m1, k, q_num_bits)
+            c_product = c0 * c1
+            product = decrypt(c_product, k)
+            self.assertTrue(product == 0)
+
+    def test_multiplication_single_11(self):
+        m0 = 1
+        m1 = 1
+        trials = 1000
+
+        for _ in range(trials):
+            key_num_bits = np.random.randint(64, 128)
+            q_num_bits = np.random.randint(64, 128)
+            k = key(key_num_bits)
+            c0 = encrypt(m0, k, q_num_bits)
+            c1 = encrypt(m1, k, q_num_bits)
+            c_product = c0 * c1
+            product = decrypt(c_product, k)
+            self.assertTrue(product == 1)
+
+    def test_addition_multiple_bits_simple(self):
+        trials = 1000
+
+        for _ in range(trials):
+            m0 = np.random.randint(4, 8)
+            m1 = np.random.randint(4, 8)
+            # key_num_bits = np.random.randint(64, 128)
+            # q_num_bits = np.random.randint(64, 128)
+            key_num_bits = 5
+            q_num_bits = 5
+            k = key(key_num_bits)
+            c0 = encrypt(m0, k, q_num_bits)
+            c1 = encrypt(m1, k, q_num_bits)
+            c_sum = c0 + c1
+            xor = decrypt(c_sum, k)
+            self.assertTrue(xor == (m0 ^ m1))
+
+    def test_multiplication_multiple_bits_simple(self):
+        trials = 1000
+
+        for _ in range(trials):
+            m0 = np.random.randint(512, 1024)
+            m1 = np.random.randint(512, 1024)
+            key_num_bits = np.random.randint(64, 128)
+            q_num_bits = np.random.randint(64, 128)
+            k = key(key_num_bits)
+            c0 = encrypt(m0, k, q_num_bits)
+            c1 = encrypt(m1, k, q_num_bits)
+            c_product = c0 * c1
+            product = decrypt(c_product, k)
+            self.assertTrue(product == (m0 & m1))
 
 
 if __name__ == '__main__':
